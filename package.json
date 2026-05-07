@@ -1,5 +1,5 @@
 {
-  "name": "rangame",
+  "name": "gencompass",
   "version": "1.0.0",
   "description": "AI 驱动的副本文字冒险游戏",
   "main": "server.js",

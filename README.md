@@ -48,8 +48,8 @@
 
 ### 2. 克隆与安装
 ```bash
-git clone https://github.com/your-username/rangame.git
-cd rangame
+git clone https://github.com/your-username/GenCompass.git
+cd GenCompass
 npm install
 ```
 

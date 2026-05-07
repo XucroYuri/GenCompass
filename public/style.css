@@ -477,6 +477,14 @@ html, body {
   letter-spacing: 1px;
 }
 
+.story-page {
+  display: block; /* Treat chunks as blocks on PC */
+}
+
+.mobile-next-indicator {
+  display: none; /* Hidden on PC */
+}
+
 /* Loading indicator */
 .story-loading {
   padding: 12px 0;
@@ -1269,6 +1277,34 @@ html, body {
   .story-scroll {
     height: 100%;
     overflow-y: auto;
+  }
+
+  .story-round {
+    display: none !important;
+  }
+  .story-round.latest-round {
+    display: block !important;
+  }
+
+  .story-page {
+    display: none;
+  }
+  .story-page.active {
+    display: block;
+  }
+
+  .mobile-next-indicator {
+    display: block;
+    text-align: right;
+    margin-top: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--fg);
+    user-select: none;
+  }
+
+  .hide-on-mobile {
+    display: none !important;
   }
 }
 

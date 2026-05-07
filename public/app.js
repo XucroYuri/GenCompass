@@ -18,6 +18,7 @@
     dungeonInfo: {},
     token: localStorage.getItem('rangame_token') || null,
     username: localStorage.getItem('rangame_username') || null,
+    currentRoundEl: null,
   };
 
   // --- DOM Refs ---
@@ -148,18 +149,29 @@
 
   // --- Story Rendering ---
   function appendStoryBlock(html, className) {
+    if (!state.currentRoundEl) {
+      state.currentRoundEl = document.createElement('div');
+      state.currentRoundEl.className = 'story-round latest-round';
+      dom.storyContent.appendChild(state.currentRoundEl);
+    }
     const div = document.createElement('div');
     div.className = 'story-block' + (className ? ` ${className}` : '');
     div.innerHTML = html;
-    dom.storyContent.appendChild(div);
+    state.currentRoundEl.appendChild(div);
     scrollStoryToBottom();
   }
 
   function appendPlayerAction(text) {
+    document.querySelectorAll('.story-round.latest-round').forEach(el => el.classList.remove('latest-round'));
+    
+    state.currentRoundEl = document.createElement('div');
+    state.currentRoundEl.className = 'story-round latest-round';
+    dom.storyContent.appendChild(state.currentRoundEl);
+
     const div = document.createElement('div');
     div.className = 'story-block player-action';
     div.textContent = `▸ ${text}`;
-    dom.storyContent.appendChild(div);
+    state.currentRoundEl.appendChild(div);
     scrollStoryToBottom();
   }
 
@@ -191,7 +203,70 @@
     narrative = narrative.trim();
 
     if (narrative) {
-      appendStoryBlock(escapeHtml(narrative));
+      const escaped = escapeHtml(narrative);
+      const paragraphs = escaped.split('<br>');
+      const pages = [];
+      let currentPage = [];
+      let currentLen = 0;
+      
+      for (const p of paragraphs) {
+        const stripped = p.replace(/<[^>]*>?/gm, '');
+        if (currentLen + stripped.length > 150 && currentPage.length > 0) {
+          pages.push(currentPage.join('<br>'));
+          currentPage = [p];
+          currentLen = stripped.length;
+        } else {
+          currentPage.push(p);
+          currentLen += stripped.length;
+        }
+      }
+      if (currentPage.length > 0) pages.push(currentPage.join('<br>'));
+
+      let html = '';
+      pages.forEach((pageContent, idx) => {
+        const isActive = idx === 0 ? ' active' : '';
+        const isLast = idx === pages.length - 1;
+        const indicator = isLast ? '' : '<div class="mobile-next-indicator blink">▼</div>';
+        html += `<span class="story-page${isActive}" data-page="${idx}">${pageContent}${indicator}</span>`;
+      });
+      
+      const div = document.createElement('div');
+      div.className = 'story-block narrative-block';
+      div.innerHTML = html;
+      div.dataset.totalPages = pages.length;
+      div.dataset.currentPage = 0;
+      
+      div.addEventListener('click', (e) => {
+        if (window.innerWidth > 900) return;
+        let cp = parseInt(div.dataset.currentPage);
+        const tp = parseInt(div.dataset.totalPages);
+        if (cp < tp - 1) {
+          div.querySelector(`.story-page[data-page="${cp}"]`).classList.remove('active');
+          cp++;
+          div.dataset.currentPage = cp;
+          div.querySelector(`.story-page[data-page="${cp}"]`).classList.add('active');
+          scrollStoryToBottom();
+          
+          if (cp === tp - 1) {
+            document.querySelector('.game-footer').classList.remove('hide-on-mobile');
+            scrollStoryToBottom();
+          }
+        }
+      });
+      
+      if (!state.currentRoundEl) {
+        state.currentRoundEl = document.createElement('div');
+        state.currentRoundEl.className = 'story-round latest-round';
+        dom.storyContent.appendChild(state.currentRoundEl);
+      }
+      state.currentRoundEl.appendChild(div);
+      
+      if (pages.length > 1 && window.innerWidth <= 900) {
+        document.querySelector('.game-footer').classList.add('hide-on-mobile');
+      } else {
+        document.querySelector('.game-footer').classList.remove('hide-on-mobile');
+      }
+      scrollStoryToBottom();
     }
 
     // Dungeon info
@@ -694,10 +769,12 @@
     dom.dungeonInfo.innerHTML = '<p class="placeholder-text">等待初始化...</p>';
     dom.roundCounter.textContent = '第 0 轮';
     dom.endingOverlay.style.display = 'none';
+    document.querySelector('.game-footer').classList.remove('hide-on-mobile');
     state.characters = {};
     state.tasks = {};
     state.roundCount = 0;
     state.gameEnded = false;
+    state.currentRoundEl = null;
     state.dungeonInfo = {};
 
     // Create a temporary streaming display element
@@ -847,6 +924,8 @@
         state.sessionId = data.sessionId;
         state.roundCount = data.roundCount || 0;
         state.gameEnded = false;
+        state.currentRoundEl = null;
+        document.querySelector('.game-footer').classList.remove('hide-on-mobile');
         state.dungeonInfo = {};
         state.characters = {};
         state.tasks = {};

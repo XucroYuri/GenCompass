@@ -47,6 +47,7 @@
     inputAction: $('#input-action'),
     btnSendAction: $('#btn-send-action'),
     btnSaveGame: $('#btn-save-game'),
+    btnTextSize: $('#btn-text-size'),
     btnBackMenu: $('#btn-back-menu'),
     characterInfo: $('#character-info'),
     systemInfo: $('#system-info'),
@@ -146,6 +147,24 @@
     }
     return headers;
   }
+
+  // --- Text Size Toggle ---
+  const TEXT_SIZES = ['normal', 'large', 'xlarge'];
+  let currentTextSizeIdx = localStorage.getItem('rangame_text_size') ? parseInt(localStorage.getItem('rangame_text_size')) : 0;
+  
+  function applyTextSize() {
+    dom.storyContent.classList.remove('text-size-normal', 'text-size-large', 'text-size-xlarge');
+    dom.storyContent.classList.add(`text-size-${TEXT_SIZES[currentTextSizeIdx]}`);
+  }
+  
+  dom.btnTextSize.addEventListener('click', () => {
+    currentTextSizeIdx = (currentTextSizeIdx + 1) % TEXT_SIZES.length;
+    localStorage.setItem('rangame_text_size', currentTextSizeIdx);
+    applyTextSize();
+  });
+  
+  // Apply initial text size
+  applyTextSize();
 
   // --- Story Rendering ---
   function appendStoryBlock(html, className) {

@@ -458,6 +458,14 @@ html, body {
   line-height: 2;
 }
 
+.story-content.text-size-large {
+  font-size: 18px;
+}
+
+.story-content.text-size-xlarge {
+  font-size: 20px;
+}
+
 .story-content .story-block {
   margin-bottom: 16px;
   padding-bottom: 16px;

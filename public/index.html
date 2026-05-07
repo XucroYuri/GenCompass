@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>副本游戏 — AI 文字冒险</title>
+  <meta name="description" content="AI 驱动的随机副本文字冒险游戏，1-bit 像素风格" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ===== SCREEN: AUTH (LOGIN/REGISTER) ===== -->
+  <div id="screen-auth" class="screen active">
+    <div class="auth-container pixel-border">
+      <h2 class="section-title">◆ 系 统 登 录 ◆</h2>
+      <div class="auth-form">
+        <div class="form-group">
+          <label class="pixel-label">用户名</label>
+          <input type="text" id="input-username" class="pixel-input" placeholder="输入用户名" />
+        </div>
+        <div class="form-group">
+          <label class="pixel-label">密  码</label>
+          <input type="password" id="input-password" class="pixel-input" placeholder="输入密码" />
+        </div>
+        <div class="auth-status" id="auth-status"></div>
+        <div class="auth-actions">
+          <button class="pixel-btn" id="btn-login">登 录</button>
+          <button class="pixel-btn" id="btn-register">注 册</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: MAIN MENU ===== -->
+  <div id="screen-menu" class="screen">
+    <div class="menu-container">
+      <div class="menu-title-block pixel-border">
+        <div class="scanlines">
+          <pre class="ascii-title">
+┏━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                       ┃
+┃    ▓▓ 副 本 游 戏 ▓▓    ┃
+┃                       ┃
+┃   AI  文 字 冒 险     ┃
+┃                       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┛</pre>
+        </div>
+      </div>
+      <div class="menu-buttons">
+        <button class="pixel-btn" id="btn-new-game">
+          <span class="btn-arrow">▸</span> 新 游 戏
+        </button>
+        <button class="pixel-btn" id="btn-load-game">
+          <span class="btn-arrow">▸</span> 读 取 存 档
+        </button>
+        <button class="pixel-btn" id="btn-profile">
+          <span class="btn-arrow">▸</span> 冒 险 档 案
+        </button>
+        <button class="pixel-btn" id="btn-gallery">
+          <span class="btn-arrow">▸</span> 副 本 图 鉴
+        </button>
+        <button class="pixel-btn" id="btn-logout">
+          <span class="btn-arrow">▸</span> 退 出 登 录
+        </button>
+      </div>
+      <div class="menu-footer">
+        <span class="blink">_</span> <span id="menu-user-status">SYSTEM READY</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: GAME ===== -->
+  <div id="screen-game" class="screen">
+    <header class="game-header pixel-border-bottom">
+      <div class="header-left">
+        <span class="header-title">▸ 副本游戏</span>
+        <div class="mobile-tabs" id="mobile-tabs" style="display: none;">
+          <button class="pixel-btn-sm" id="btn-tab-char">角色</button>
+          <button class="pixel-btn-sm" id="btn-tab-dungeon">副本</button>
+          <button class="pixel-btn-sm" id="btn-tab-task">任务</button>
+        </div>
+      </div>
+      <div class="header-center">
+        <span class="round-counter" id="round-counter">第 0 轮</span>
+      </div>
+      <div class="header-actions">
+        <button class="pixel-btn-sm" id="btn-save-game">存档</button>
+        <button class="pixel-btn-sm" id="btn-back-menu">菜单</button>
+      </div>
+    </header>
+
+    <main class="game-body">
+      <!-- Left Panel: Character Info -->
+      <aside class="panel panel-left pixel-border-right" id="panel-character">
+        <h3 class="panel-title">◆ 角色信息</h3>
+        <div class="panel-content" id="character-info">
+          <p class="placeholder-text">等待游戏开始...</p>
+        </div>
+      </aside>
+
+      <!-- Center: Story Area -->
+      <section class="panel panel-center" id="panel-story">
+        <div class="story-scroll" id="story-scroll">
+          <div class="story-content" id="story-content"></div>
+          <div class="story-loading" id="story-loading" style="display:none;">
+            <span class="loading-dots">系统处理中<span class="dots"></span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Status & Tasks -->
+      <aside class="panel panel-right pixel-border-left" id="panel-status">
+        <h3 class="panel-title">◆ 副本信息</h3>
+        <div class="panel-content" id="dungeon-info">
+          <p class="placeholder-text">等待初始化...</p>
+        </div>
+        <h3 class="panel-title">◆ 系统状态</h3>
+        <div class="panel-content" id="system-info">
+          <p class="placeholder-text">等待初始化...</p>
+        </div>
+        <h3 class="panel-title">◆ 当前任务</h3>
+        <div class="panel-content" id="task-info">
+          <p class="placeholder-text">暂无任务</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Bottom: Choices & Input -->
+    <footer class="game-footer pixel-border-top">
+      <div class="choices-container" id="choices-container"></div>
+      <div class="input-row">
+        <input type="text" id="input-action" class="pixel-input action-input"
+               placeholder="输入自定义行动..." />
+        <button class="pixel-btn" id="btn-send-action">发送</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ===== SCREEN: PROFILE (冒险档案) ===== -->
+  <div id="screen-profile" class="screen">
+    <div class="profile-container">
+      <h2 class="section-title">◆ 冒 险 档 案 ◆</h2>
+
+      <!-- Stats Summary -->
+      <div class="profile-stats" id="profile-stats">
+        <div class="stat-card pixel-border">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">通关总数</div>
+        </div>
+        <div class="stat-card pixel-border">
+          <div class="stat-value" id="stat-s">0</div>
+          <div class="stat-label">S 评价</div>
+        </div>
+        <div class="stat-card pixel-border">
+          <div class="stat-value" id="stat-a">0</div>
+          <div class="stat-label">A 评价</div>
+        </div>
+        <div class="stat-card pixel-border">
+          <div class="stat-value" id="stat-b">0</div>
+          <div class="stat-label">B 评价</div>
+        </div>
+        <div class="stat-card pixel-border">
+          <div class="stat-value" id="stat-c">0</div>
+          <div class="stat-label">C 评价</div>
+        </div>
+        <div class="stat-card pixel-border">
+          <div class="stat-value" id="stat-hidden">0</div>
+          <div class="stat-label">? 隐藏</div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <h3 class="subsection-title">▸ 成就</h3>
+      <div class="achievements-grid" id="achievements-grid">
+        <p class="placeholder-text">加载中...</p>
+      </div>
+
+      <!-- Recent Records -->
+      <h3 class="subsection-title">▸ 通关记录</h3>
+      <div class="records-list" id="records-list">
+        <p class="placeholder-text">加载中...</p>
+      </div>
+
+      <div class="profile-actions">
+        <button class="pixel-btn" id="btn-profile-back">
+          <span class="btn-arrow">▸</span> 返 回 菜 单
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: GALLERY (副本图鉴) ===== -->
+  <div id="screen-gallery" class="screen">
+    <div class="gallery-container">
+      <h2 class="section-title">◆ 副 本 图 鉴 ◆</h2>
+      <div class="gallery-grid" id="gallery-grid">
+        <p class="placeholder-text">加载中...</p>
+      </div>
+      <div class="gallery-actions">
+        <button class="pixel-btn" id="btn-gallery-back">
+          <span class="btn-arrow">▸</span> 返 回 菜 单
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OVERLAY: ENDING SETTLEMENT ===== -->
+  <div id="ending-overlay" class="ending-overlay" style="display:none;">
+    <div class="ending-box">
+      <div class="ending-scanlines">
+        <div class="ending-rank-display" id="ending-rank-display">S</div>
+      </div>
+      <div class="ending-title" id="ending-title-display">结局标题</div>
+      <div class="ending-desc" id="ending-desc-display">结局描述</div>
+      <div class="ending-stats" id="ending-stats">
+        <div class="ending-stat">
+          <span class="ending-stat-label">副本</span>
+          <span class="ending-stat-value" id="ending-dungeon-name">—</span>
+        </div>
+        <div class="ending-stat">
+          <span class="ending-stat-label">回合</span>
+          <span class="ending-stat-value" id="ending-rounds">0</span>
+        </div>
+        <div class="ending-stat">
+          <span class="ending-stat-label">世界观</span>
+          <span class="ending-stat-value" id="ending-world">—</span>
+        </div>
+      </div>
+      <div class="ending-achievements" id="ending-achievements" style="display:none;"></div>
+      <div class="ending-actions">
+        <button class="pixel-btn" id="btn-ending-menu">返 回 菜 单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST: ACHIEVEMENT UNLOCK ===== -->
+  <div id="achievement-toast" class="achievement-toast" style="display:none;">
+    <div class="achievement-toast-icon">★</div>
+    <div class="achievement-toast-content">
+      <div class="achievement-toast-title" id="toast-achievement-name">成就解锁</div>
+      <div class="achievement-toast-desc" id="toast-achievement-desc">描述</div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: SAVE/LOAD ===== -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal-box pixel-border">
+      <h2 class="section-title" id="modal-title">◆ 存 档 管 理 ◆</h2>
+      <div class="save-slots" id="save-slots"></div>
+      <div class="modal-actions">
+        <button class="pixel-btn" id="btn-modal-close">关 闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: MOBILE INFO PANEL ===== -->
+  <div id="mobile-panel-overlay" class="mobile-panel-overlay" style="display:none;">
+    <div class="mobile-panel-box pixel-border">
+      <div class="mobile-panel-header">
+        <h3 class="panel-title" id="mobile-panel-title">标题</h3>
+        <button class="pixel-btn-sm" id="btn-mobile-close">关闭</button>
+      </div>
+      <div class="mobile-panel-content" id="mobile-panel-content">
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -197,3 +197,8 @@ http://localhost:3000
 你可以随意 Fork，修改 Prompt 词来打造属于你的世界观引擎。
 
 基于 [MIT License](LICENSE) 开源。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=XucroYuri/GenCompass&type=Date)](https://star-history.com/#XucroYuri/GenCompass&Date)
+
